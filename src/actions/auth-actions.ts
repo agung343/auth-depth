@@ -24,15 +24,26 @@ export async function Login(values: z.infer<typeof LoginSchema>) {
 
   const { email, password } = validateFields.data;
 
-  const existingUser = await getUserByEmail(email)
+  const existingUser = await getUserByEmail(email);
   if (!existingUser || !existingUser.email || !existingUser.password) {
     return {
-      error: "Bad Authentication"
-    }
+      error: "Bad Authentication",
+    };
   }
 
   if (existingUser.emailVerified) {
-    const verificationToken = await generateVerificationToken(existingUser.email)
+    const verificationToken = await generateVerificationToken(
+      existingUser.email
+    );
+
+    await sendVerificationEmail(
+      verificationToken.email,
+      verificationToken.token
+    );
+
+    return {
+      success: "Confirmation email sent",
+    };
   }
 
   try {
@@ -41,7 +52,6 @@ export async function Login(values: z.infer<typeof LoginSchema>) {
       password,
       redirectTo: DEFAULT_LOGIN_REDIRECT,
     });
-
   } catch (error) {
     if (error instanceof AuthError) {
       switch (error.type) {
@@ -92,10 +102,10 @@ export async function Register(values: z.infer<typeof RegisterSchema>) {
     },
   });
 
-  const verificationToken = await generateVerificationToken(email)
+  const verificationToken = await generateVerificationToken(email);
 
   // TODO: Send verification token email
-  await sendVerificationEmail(verificationToken.email, verificationToken.token)
+  await sendVerificationEmail(verificationToken.email, verificationToken.token);
 
   return {
     success: "Confirmation email success",
