@@ -67,10 +67,6 @@ export async function Login(values: z.infer<typeof LoginSchema>) {
     }
     throw error;
   }
-
-  return {
-    success: "Success",
-  };
 }
 
 export async function Register(values: z.infer<typeof RegisterSchema>) {
